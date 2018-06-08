@@ -81,7 +81,7 @@ SynthesisMaker.prototype.putPixel = function(x, y, pixel, alpha){
     
 }
 
-SynthesisMaker.prototype.make = function(){
+SynthesisMaker.prototype.make = function(outterAlpha=1){
     this.addOnloadLisener(() => {
         if(this.imgs.length < this.count) return;
 
@@ -102,6 +102,14 @@ SynthesisMaker.prototype.make = function(){
                     // console.log(currentImg, i, j)
                     if(currentImg.width<=i || currentImg.height<=j) {
                         this.skip++;
+                        // this.putPixel(i, j, {R:0,G:0,B:0,A:0}, 0);
+                        if(currentImg.width<=i){
+                            var index = parseInt(_.find(this.imgs, {width:width}).id.split('i')[1]);
+                            var p = this.getPixel(this.datas[index], i + i%count, j);
+                            this.putPixel(i, j, p, this.imgs[index].alpha * outterAlpha);
+                        }else{
+                            this.putPixel(i, j, {R:0,G:0,B:0,A:0}, 0);
+                        }
                         continue;
                     }
                     var p = this.getPixel(this.datas[i%count], i + i%count, j);
