@@ -20,13 +20,14 @@
         var sm = new SynthesisMaker()
         // sm.loadImg('./pexels-1.jpeg')
         //   .loadImg('./pexels-2.jpeg')
-        sm.loadImg('./avatar (1).jpg')
+        sm.loadImg('./pexels-1.jpeg', 1)
+          .loadImg('./avatar (1).jpg')
           .loadImg('./avatar (1).png', 0.4)
         //   .addOnloadLisener((e) => {
         //       var index = parseInt(e.target.id.split('i')[1], 10)
         //       console.log(sm.getPixel(sm.datas[index], 0, 0))
         //   }, 'i1')
-          .make();
+          .make(0.8);
         
     </script>
 </body>
