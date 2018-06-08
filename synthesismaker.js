@@ -4,6 +4,7 @@ var SynthesisMaker = function(){
     this.datas = [];
     this.onloadLisener = [];
     this.dest = [];
+    this.skip = 0;
 }
 
 SynthesisMaker.prototype.addOnloadLisener = function(func, id=null){
@@ -15,7 +16,7 @@ SynthesisMaker.prototype.addOnloadLisener = function(func, id=null){
 }
 
 
-SynthesisMaker.prototype.loadImg = function(url){
+SynthesisMaker.prototype.loadImg = function(url, alpha=1){
     var  img = new Image()
     img.src = url;
     img.id = 'i' + this.count;
@@ -29,6 +30,7 @@ SynthesisMaker.prototype.loadImg = function(url){
         img,
         height,
         width,
+        alpha,
         });
 
         var c = document.createElement('canvas');
@@ -38,7 +40,7 @@ SynthesisMaker.prototype.loadImg = function(url){
         var ctx = c.getContext('2d');
         ctx.drawImage(img, 0, 0);
         var data = ctx.getImageData(0, 0, width, height);
-        this.datas.push(_.chunk(data.data, 1920 * 4));
+        this.datas.push(_.chunk(data.data, width * 4));
 
         for (const func of this.onloadLisener) {
             if(func.id === null) {
@@ -64,7 +66,7 @@ SynthesisMaker.prototype.getPixel = function(idata, x, y){
     }
 }
 
-SynthesisMaker.prototype.putPixel = function(x, y, pixel){
+SynthesisMaker.prototype.putPixel = function(x, y, pixel, alpha){
     // this.dest.push(pixel.R);
     // this.dest.push(pixel.G);
     // this.dest.push(pixel.B);
@@ -75,7 +77,7 @@ SynthesisMaker.prototype.putPixel = function(x, y, pixel){
     this.dest[y][x * 4] = pixel.R;
     this.dest[y][x * 4 + 1] = pixel.G;
     this.dest[y][x * 4 + 2] = pixel.B;
-    this.dest[y][x * 4 + 3] = pixel.A;
+    this.dest[y][x * 4 + 3] = 255 * alpha;
     
 }
 
@@ -88,6 +90,7 @@ SynthesisMaker.prototype.make = function(){
         var count = this.imgs.length;
         // console.log(`count: ${count}     and: ${this.imgs}`);
         // console.log(this.imgs);
+        // console.log(`max width: ${width} height: ${height}`)
 
         var a = Date.now();
         
@@ -95,12 +98,14 @@ SynthesisMaker.prototype.make = function(){
         for(var i=0; i < width; i++){
             for(var j = 0; j < height; j++){
                 // if(index < count){
-                    if(this.imgs[i%count].width<=i || this.imgs[i%count].height<=j) {
-                        console.log('跳过了！');
+                    const currentImg = this.imgs[i%count]
+                    // console.log(currentImg, i, j)
+                    if(currentImg.width<=i || currentImg.height<=j) {
+                        this.skip++;
                         continue;
                     }
                     var p = this.getPixel(this.datas[i%count], i + i%count, j);
-                    this.putPixel(i, j, p);
+                    this.putPixel(i, j, p, this.imgs[i%count].alpha);
             }
             //console.log(j);
         }
@@ -112,7 +117,7 @@ SynthesisMaker.prototype.make = function(){
         });
 
         var b = Date.now();
-        console.log(`一共用了 ${(b - a)}毫秒  max width: ${width} height: ${height}`)
+        console.log(`一共用了 ${(b - a)}毫秒  max width: ${width} height: ${height}   total skip: ${this.skip}`)
 
         var canvas = document.createElement('canvas');
         canvas.width = width;
